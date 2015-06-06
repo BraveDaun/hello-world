@@ -1,2 +1,5 @@
 # hello-world
-test - repo
+===============================================
+This project is meaningless and utterly worthless.
+  Move along...
+  
