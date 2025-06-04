@@ -1,0 +1,76 @@
+<html>
+    <header>
+    <title class="center">Westminster Presbyterian Church<br/>
+        Video Library</title>
+    <meta charset="UTF-8">  
+    </header>
+   <body>
+  <!-- Search bar -->
+  <div style="margin-bottom:1em;">
+    <label for="search-input">Search for Older Videos:</label>   
+    <input type="text" id="search-input" placeholder="Search videos by month or name..." style="width:300px; padding:5px;">
+  </div>
+  <!-- Add this where you want the video list to appear -->
+  <div id="video-list">
+    <!-- Videos will be dynamically inserted here -->
+
+<script>
+//const FOLDER_ID = '1eIwwhw7GlFkvptlGTfeVa5V8vmBcKUtE';
+//const API_KEY = 'AIzaSyBWqTokHLieA8ksklG5HYRaTuGuF5TZx94';
+
+//supportsAllDrives=true&includeItemsFromAllDrives=true  <<This is the key to getting files from shared drives!
+
+async function fetchVideos() {
+    //https://www.googleapis.com/drive/v3/files?q='1eIwwhw7GlFkvptlGTfeVa5V8vmBcKUtE'+in+parents&orderBy=createdTime+desc&fields=files(id,name,createdTime,mimeType)&supportsAllDrives=true&includeItemsFromAllDrives=true&key=AIzaSyBWqTokHLieA8ksklG5HYRaTuGuF5TZx94
+      const url = `https://www.googleapis.com/drive/v3/files?q='1eIwwhw7GlFkvptlGTfeVa5V8vmBcKUtE'+in+parents+and+mimeType+contains+'video/'&orderBy=modifiedTime+desc&fields=files(id,name,createdTime,modifiedTime,mimeType)&supportsAllDrives=true&includeItemsFromAllDrives=true&pageSize=5&key=AIzaSyBWqTokHLieA8ksklG5HYRaTuGuF5TZx94`;
+    //const url = `https://www.googleapis.com/drive/v3/files?q='1eIwwhw7GlFkvptlGTfeVa5V8vmBcKUtE'+in+parents+and+mimeType+contains+'video/'&orderBy=createdTime+desc&fields=files(id,name,createdTime)&key=AIzaSyBWqTokHLieA8ksklG5HYRaTuGuF5TZx94`;
+    const res = await fetch(url);
+    const data = await res.json();
+    return data.files || [];
+}
+
+function createVideoEmbed(file) {
+    const videoUrl = `https://drive.google.com/file/d/${file.id}/preview`;
+    return `
+        <div style="margin-bottom:2em;text-align:center;">
+            <h3>${file.name}</h3>
+            <iframe src="${videoUrl}" width="640" height="360" allow="autoplay" allowfullscreen></iframe>
+            <!-- <div><H3>${file.name}</H3></div>
+            <div><small>Uploaded: ${new Date(file.modifiedTime).toLocaleString()}</small></div> -->
+        </div><hr/>
+    `;
+}
+
+let allFiles = [];
+async function displayVideos(filter = "") {
+    const videoList = document.getElementById('video-list');
+    if (allFiles.length === 0) {
+        videoList.innerHTML = 'Loading videos...';
+        allFiles = await fetchVideos();
+    }
+    let files = allFiles;
+    if (filter) {
+        const lower = filter.toLowerCase();
+        files = files.filter(f => f.name.toLowerCase().includes(lower));
+    }
+    if (files.length === 0) {
+        videoList.innerHTML = 'No videos found.';
+        return;
+    }
+    videoList.innerHTML = files.map(createVideoEmbed).join('');
+}
+
+document.getElementById('search-input').addEventListener('input', function(e) {
+    displayVideos(e.target.value);
+});
+
+displayVideos();
+</script>
+</div>
+  <!-- Footer -->
+  <footer style="text-align:center; margin-top:2em;">
+    <p>&copy; 2025 Westminster Presbyterian Church</p>
+    <p>Powered by Google Drive API</p>
+  </footer>
+</body>
+</html>
